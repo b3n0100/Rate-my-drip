@@ -22,6 +22,9 @@ CORS(app)
 # Load model files
 model = joblib.load('worthiness_regression_model.pkl')
 vectorizer = joblib.load('tfidf_vectorizer.pkl')
+cat_age_model = joblib.load('cat_age_model.pkl')
+age_encoder = joblib.load('age_encoder.pkl')
+peer_lookup = pd.read_csv('peer_sentiment_lookup.csv')
 
 df = pd.read_csv(
     'Womens Clothing E-Commerce Reviews.csv',
@@ -49,6 +52,41 @@ def preprocess_text(text):
     ]
 
     return " ".join(tokens)
+
+
+def get_age_group(age):
+    if age <= 29:
+        return 'Young Adult'
+    elif age <= 49:
+        return 'Middle Age'
+    return 'Senior'
+
+
+def predict_demographic_rating(clothing_id, user_age):
+    age_group = get_age_group(user_age)
+    row = peer_lookup[
+        (peer_lookup['Clothing ID'] == clothing_id) &
+        (peer_lookup['Age Group'] == age_group)
+    ]
+
+    if row.empty:
+        # fallback: global average for this product
+        global_rows = peer_lookup[peer_lookup['Clothing ID'] == clothing_id]
+        if global_rows.empty:
+            return None
+        rec = global_rows['Recommended IND'].mean()
+        review_text = " ".join(global_rows['clean_review'].dropna())
+        age_group_fallback = global_rows['Age Group'].mode()[0]
+        age_enc = age_encoder.transform(pd.DataFrame({'Age Group': [age_group_fallback]}))
+    else:
+        rec = float(row['Recommended IND'].iloc[0])
+        review_text = str(row['clean_review'].iloc[0])
+        age_enc = age_encoder.transform(pd.DataFrame({'Age Group': [age_group]}))
+
+    text_vec = vectorizer.transform([review_text])
+    num_vec = np.array([[rec]])
+    features = hstack([text_vec, num_vec, age_enc])
+    return int(cat_age_model.predict(features)[0])
 
 
 @app.route('/scan', methods=['GET'])
@@ -143,6 +181,8 @@ def scan():
             f"{positive_keywords[2]}."
         )
 
+    demographic_rating = predict_demographic_rating(clothing_id, user_age)
+
     return jsonify({
 
         'clothing_id': clothing_id,
@@ -151,6 +191,8 @@ def scan():
             pred_rating,
             2
         ),
+
+        'demographic_rating': demographic_rating,
 
         'worthiness_score': round(
             score,
