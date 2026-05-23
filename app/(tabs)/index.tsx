@@ -2,6 +2,7 @@ import Slider from "@react-native-community/slider";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,10 +13,37 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MOCK_ITEMS = [
-  { id: "767", name: "Linen Wrap Top", rating: 4.8, category: "Tops" },
-  { id: "1080", name: "Floral Midi Dress", rating: 4.6, category: "Dresses" },
-  { id: "1077", name: "Tan Blazer", rating: 4.5, category: "Jackets" },
-  { id: "872", name: "High Rise Jeans", rating: 4.3, category: "Bottoms" },
+  {
+    id: "767",
+    name: "Linen Wrap Top",
+    rating: 4.8,
+    category: "Tops",
+    image: require("../../assets/images/clothes/top.jpg"),
+  },
+
+  {
+    id: "1080",
+    name: "Floral Midi Dress",
+    rating: 4.6,
+    category: "Dresses",
+    image: require("../../assets/images/clothes/Midi Floral dress.jpg"),
+  },
+
+  {
+    id: "1077",
+    name: "Tan Blazer",
+    rating: 4.5,
+    category: "Jackets",
+    image: require("../../assets/images/clothes/Brown Blazer.png"),
+  },
+
+  {
+    id: "872",
+    name: "High Rise Jeans",
+    rating: 4.3,
+    category: "Bottoms",
+    image: require("../../assets/images/clothes/pants.jpg"),
+  },
 ];
 
 const CATEGORIES = ["Tops", "Bottoms", "Dresses", "Jackets", "Intimates"];
@@ -123,7 +151,11 @@ export default function HomeScreen() {
               style={styles.itemCard}
               onPress={() => router.push(`/product/${item.id}?age=${age}`)}
             >
-              <View style={styles.itemImg} />
+              <Image
+  source={item.image}
+  style={styles.itemImg}
+  resizeMode="cover"
+/>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <View style={styles.scoreBadge}>
@@ -280,7 +312,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
   },
-  itemImg: { height: 160, backgroundColor: "#D3CFC9" },
+  itemImg: {
+  width: "100%",
+  height: 160,
+},
   itemInfo: { padding: 10 },
   itemName: {
     fontSize: 13,
