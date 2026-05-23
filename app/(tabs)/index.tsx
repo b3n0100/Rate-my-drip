@@ -2,13 +2,12 @@ import Slider from "@react-native-community/slider";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -28,14 +27,7 @@ export default function HomeScreen() {
   const [searchId, setSearchId] = useState("");
 
   const confirmAge = () => {
-    Alert.alert(
-      "Are you sure?",
-      "This will help StyleMatch match you with the appropriate style in accordance to your age.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Yes, continue", onPress: () => setAgeConfirmed(true) },
-      ]
-    );
+    setAgeConfirmed(true);
   };
 
   const handleSearch = () => {
@@ -110,7 +102,11 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.catScroll}
+        >
           {CATEGORIES.map((cat) => (
             <TouchableOpacity key={cat} style={styles.catPill}>
               <Text style={styles.catLabel}>{cat}</Text>
@@ -144,7 +140,10 @@ export default function HomeScreen() {
           <Text style={styles.navIcon}>🏠</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.scanBtn} onPress={() => router.push("/camera")}>
+        <TouchableOpacity
+          style={styles.scanBtn}
+          onPress={() => router.push("/camera")}
+        >
           <Text style={styles.scanIcon}>▦</Text>
         </TouchableOpacity>
 

@@ -19,7 +19,10 @@ export default function CameraScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.center}>
           <Text style={styles.title}>Camera Access Needed</Text>
-          <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
+          <TouchableOpacity
+            style={styles.permissionBtn}
+            onPress={requestPermission}
+          >
             <Text style={styles.permissionText}>Allow Camera</Text>
           </TouchableOpacity>
         </View>
@@ -36,7 +39,10 @@ export default function CameraScreen() {
           <Text style={styles.navIcon}>🏠</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.scanBtn} onPress={() => router.push("/camera")}>
+        <TouchableOpacity
+          style={styles.scanBtn}
+          onPress={() => router.push("/camera")}
+        >
           <Text style={styles.scanIcon}>▦</Text>
         </TouchableOpacity>
 
@@ -70,7 +76,9 @@ export default function CameraScreen() {
           <Text style={styles.title}>Barcode Scanner</Text>
 
           <Text style={styles.resultText}>
-            {barcodeData ? `Scanned: ${barcodeData}` : "Point camera at a barcode or QR code."}
+            {barcodeData
+              ? `Scanned: ${barcodeData}`
+              : "Point camera at a barcode or QR code."}
           </Text>
 
           {scanned && (
