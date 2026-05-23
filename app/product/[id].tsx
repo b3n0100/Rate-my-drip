@@ -1,112 +1,327 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const PRODUCT_IMAGES: Record<string, any> = {
+  "767": require("../../assets/images/clothes/top.jpg"),
+  "1080": require("../../assets/images/clothes/Midi Floral dress.jpg"),
+  "1077": require("../../assets/images/clothes/Brown Blazer.png"),
+  "872": require("../../assets/images/clothes/pants.jpg"),
+};
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const API_URL = "http://127.0.0.1:5000";
 
-const MOCK_ITEMS = [
-  {
-    id: "767",
-    name: "Linen Wrap Top",
-    rating: 4.8,
-    category: "Tops",
-    image: require("../../assets/images/clothes/top.jpg"),
-  },
-  {
-    id: "1080",
-    name: "Floral Midi Dress",
-    rating: 4.6,
-    category: "Dresses",
-    image: require("../../assets/images/clothes/Midi Floral dress.jpg"),
-  },
-  {
-    id: "1077",
-    name: "Tan Blazer",
-    rating: 4.5,
-    category: "Jackets",
-    image: require("../../assets/images/clothes/Brown Blazer.png"),
-  },
-  {
-    id: "872",
-    name: "High Rise Jeans",
-    rating: 4.3,
-    category: "Bottoms",
-    image: require("../../assets/images/clothes/pants.jpg"),
-  },
-];
-
-export default function ProductDetailsScreen() {
-  const router = useRouter();
+export default function ProductScreen() {
   const { id, age } = useLocalSearchParams();
+  const router = useRouter();
 
-  const item = MOCK_ITEMS.find((product) => product.id === id);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_URL}/scan?age=${age || 25}&clothing_id=${id}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.error) setError(json.error);
+        else setData(json);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Could not connect to server. Make sure Flask is running.");
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator size="large" color="#8B5E3C" />
+        <Text style={styles.loadingText}>Analyzing reviews...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>❌ {error}</Text>
+
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.goBackBtn}
+          >
+            <Text style={styles.goBackText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const isBuy = data.verdict === "buy";
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
 
-        {item?.image ? (
-  <Image source={item.image} style={styles.imageBox} resizeMode="cover" />
-) : (
-  <View style={styles.imageBox} />
-)}
-        <Text style={styles.title}>
-          {item ? item.name : "Clothing Item"}
-        </Text>
+          <Text style={styles.headerTitle}>Product Details</Text>
 
-        <Text style={styles.info}>
-          Category: {item ? item.category : "Unknown"}
-        </Text>
+          <View style={styles.backBtn} />
+        </View>
 
-        <Text style={styles.info}>
-          Rating: {item ? item.rating : "N/A"} ★
-        </Text>
+        {/* Image */}
+        {PRODUCT_IMAGES[String(id)] ? (
+          <Image source={PRODUCT_IMAGES[String(id)]} style={styles.heroImg} resizeMode="cover" />
+        ) : (
+          <View style={styles.heroImg} />
+        )}
 
-        <Text style={styles.info}>
-          StyleMatch Age: {age}
-        </Text>
+        {/* Verdict */}
+        <View
+          style={[
+            styles.verdict,
+            { backgroundColor: isBuy ? "#2C7A4B" : "#A32D2D" },
+          ]}
+        >
+          <Text style={styles.verdictIcon}>{isBuy ? "✓" : "✗"}</Text>
 
-        <Text style={styles.description}>
-          This page will later show more details, reviews, outfit suggestions,
-          and AI-powered style matching.
-        </Text>
-      </View>
+          <View>
+            <Text style={styles.verdictText}>
+              {isBuy ? "Buy it" : "Don't buy it"}
+            </Text>
+
+            <Text style={styles.verdictSub}>
+              {isBuy
+                ? "Loved by people like you"
+                : "Not recommended for your age group"}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.content}>
+          {/* Product Info */}
+          <Text style={styles.productName}>
+            Clothing ID: {data.clothing_id}
+          </Text>
+
+          <View style={styles.ratingRow}>
+            <Text style={styles.stars}>
+              {"★".repeat(Math.round(data.predicted_rating))}
+            </Text>
+
+            <Text style={styles.ratingNum}>
+              {data.predicted_rating} / 5.0
+            </Text>
+          </View>
+
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>
+                {data.worthiness_score}
+              </Text>
+              <Text style={styles.statLabel}>Worthiness Score</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>
+                {data.reviews_analyzed}
+              </Text>
+              <Text style={styles.statLabel}>Reviews Analyzed</Text>
+            </View>
+          </View>
+
+          {/* Positive Keywords */}
+          {data.positive_keywords?.length > 0 && (
+            <View style={styles.keywordSection}>
+              <Text style={styles.sectionTitle}>Popular mentions</Text>
+
+              <View style={styles.tagContainer}>
+                {data.positive_keywords.map((word, index) => (
+                  <View key={index} style={styles.positiveTag}>
+                    <Text style={styles.tagText}>{word}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Negative Keywords */}
+          {data.negative_keywords?.length > 0 && (
+            <View style={styles.keywordSection}>
+              <Text style={styles.sectionTitle}>Common complaints</Text>
+
+              <View style={styles.tagContainer}>
+                {data.negative_keywords.map((word, index) => (
+                  <View key={index} style={styles.negativeTag}>
+                    <Text style={styles.tagText}>{word}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#F5F0EB" },
-  container: { flex: 1, padding: 20 },
-  backText: {
-    fontSize: 16,
-    color: "#8B5E3C",
-    fontWeight: "700",
+
+  loadingText: {
+    textAlign: "center",
+    marginTop: 12,
+    color: "#888780",
+  },
+
+  errorBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+
+  errorText: {
+    color: "#A32D2D",
+    marginBottom: 16,
+  },
+
+  goBackBtn: {
+    backgroundColor: "#8B5E3C",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+
+  goBackText: { color: "#fff" },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+  },
+
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EDE8E2",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  backIcon: { fontSize: 18 },
+
+  headerTitle: { fontSize: 15, fontWeight: "500" },
+
+  heroImg: {
+    height: 280,
+    backgroundColor: "#D3CFC9",
+    marginHorizontal: 16,
+    borderRadius: 20,
+  },
+
+  verdict: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 14,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  verdictIcon: { fontSize: 22, color: "#fff" },
+
+  verdictText: { fontSize: 15, fontWeight: "500", color: "#fff" },
+
+  verdictSub: { fontSize: 11, color: "rgba(255,255,255,0.75)" },
+
+  content: { padding: 16 },
+
+  productName: { fontSize: 20, fontWeight: "500" },
+
+  ratingRow: {
+    flexDirection: "row",
+    gap: 8,
     marginBottom: 20,
   },
-  imageBox: {
-  height: 260,
-  width: "100%",
-  borderRadius: 20,
-  marginBottom: 20,
-},
-  title: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#2C2C2A",
-    marginBottom: 10,
+
+  stars: { color: "#8B5E3C" },
+
+  ratingNum: {},
+
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
   },
-  info: {
-    fontSize: 16,
-    color: "#5F5E5A",
-    marginBottom: 6,
+
+  statBox: {
+    flex: 1,
+    backgroundColor: "#EDE8E2",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
   },
-  description: {
+
+  statValue: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#8B5E3C",
+  },
+
+  statLabel: {
+    fontSize: 11,
+    color: "#888780",
+  },
+
+  keywordSection: { marginTop: 24 },
+
+  sectionTitle: {
     fontSize: 15,
-    color: "#2C2C2A",
-    lineHeight: 22,
-    marginTop: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+
+  positiveTag: {
+    backgroundColor: "#D8F3DC",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    margin: 4,
+  },
+
+  negativeTag: {
+    backgroundColor: "#F8D7DA",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    margin: 4,
+  },
+
+  tagText: {
+    fontWeight: "500",
   },
 });

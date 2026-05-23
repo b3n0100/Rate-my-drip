@@ -1,4 +1,5 @@
 import Slider from "@react-native-community/slider";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -99,20 +100,18 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoPlaceholder}>SM</Text>
-          </View>
+          <View style={{ width: 36 }} />
 
-          <Text style={styles.headerTitle}>StyleMatch</Text>
+          <Image source={require("./logo.png")} style={styles.headerLogo} resizeMode="contain" />
 
           <TouchableOpacity style={styles.bellBtn}>
-            <Text style={styles.bellIcon}>🔔</Text>
+            <Ionicons name="notifications-outline" size={18} color="#5F5E5A" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.searchRow}>
           <View style={styles.searchBar}>
-            <Text style={styles.searchIcon}>🔍</Text>
+            <Ionicons name="search-outline" size={16} color="#888780" />
             <TextInput
               placeholder="Enter Clothing ID..."
               placeholderTextColor="#888780"
@@ -169,18 +168,18 @@ export default function HomeScreen() {
 
       <View style={styles.nav}>
         <TouchableOpacity onPress={() => router.push("/")}>
-          <Text style={styles.navIcon}>🏠</Text>
+          <Ionicons name="home-outline" size={22} color="#F5F0EB" />
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.scanBtn}
           onPress={() => router.push("/camera")}
         >
-          <Text style={styles.scanIcon}>▦</Text>
+          <Ionicons name="scan-outline" size={22} color="#F5F0EB" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push("/profile")}>
-          <Text style={styles.navIcon}>👤</Text>
+          <Ionicons name="person-outline" size={22} color="#F5F0EB" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -257,8 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  logoPlaceholder: { fontSize: 12, color: "#8B5E3C", fontWeight: "bold" },
-  headerTitle: { fontSize: 22, fontWeight: "bold", color: "#2C2C2A" },
+  headerLogo: { width: 120, height: 40 },
   bellBtn: {
     width: 36,
     height: 36,
@@ -267,7 +265,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  bellIcon: { fontSize: 16 },
 
   searchRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
   searchBar: {
@@ -280,7 +277,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     gap: 8,
   },
-  searchIcon: { fontSize: 14 },
   searchInput: { flex: 1, fontSize: 14, color: "#2C2C2A" },
   searchBtn: {
     backgroundColor: "#8B5E3C",
@@ -345,7 +341,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 40,
   },
-  navIcon: { fontSize: 20 },
   scanBtn: {
     width: 48,
     height: 48,
@@ -354,5 +349,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  scanIcon: { fontSize: 22, color: "#F5F0EB" },
 });
